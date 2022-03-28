@@ -1,0 +1,162 @@
+﻿<Page x:Class="TicTacToeClient.MVVM.View.GameFieldPage"
+      xmlns="http://schemas.microsoft.com/winfx/2006/xaml/presentation"
+      xmlns:x="http://schemas.microsoft.com/winfx/2006/xaml"
+      xmlns:mc="http://schemas.openxmlformats.org/markup-compatibility/2006" 
+      xmlns:d="http://schemas.microsoft.com/expression/blend/2008" 
+      xmlns:i="http://schemas.microsoft.com/xaml/behaviors"
+      xmlns:local="clr-namespace:TicTacToeClient.MVVM.View"
+      xmlns:cnv="clr-namespace:TicTacToeClient" 
+      mc:Ignorable="d" 
+      d:DesignHeight="600" d:DesignWidth="600"
+      Title="GameFieldPage">
+    <Page.Resources>
+        <cnv:OpacityConverter x:Key="_cnv"/>
+        <cnv:BorderVisibilityConvertor x:Key="_brdConverter"/>
+    </Page.Resources>
+    <Grid>
+        <ItemsControl x:Name="_data" 
+                      ItemsSource="{Binding GameField}"
+                      HorizontalAlignment="Center"
+                      VerticalAlignment="Center"
+                      Width="480"
+                      Height="480">
+            <ItemsControl.ItemsPanel>
+                <ItemsPanelTemplate>
+                    <Canvas/>
+                </ItemsPanelTemplate>
+            </ItemsControl.ItemsPanel>
+            <ItemsControl.ItemTemplate>
+                <DataTemplate>
+                    <Border Padding="20"
+                                        Margin="3"
+                                        BorderThickness="3"
+                                        BorderBrush="Gray"
+                                        Background="Silver"
+                                        Width="160"
+                                        Height="160"
+                                        CornerRadius="25"
+                                        x:Name="_border">
+
+                        <i:Interaction.Triggers>
+                            <i:EventTrigger EventName="MouseDown">
+                                <i:InvokeCommandAction Command="{Binding DataContext.Press, RelativeSource={RelativeSource AncestorType=Page}}" 
+                                                       CommandParameter="{Binding ElementName=_border, Path=DataContext}" />
+                            </i:EventTrigger>
+                        </i:Interaction.Triggers>
+
+                        <Border.RenderTransform>
+                            <TranslateTransform x:Name="_borderTransform"
+                                                X="{Binding X}"
+                                                Y="{Binding Y}"/>
+                        </Border.RenderTransform>
+
+                        <TextBlock Text="{Binding PlayerMarker}"
+                                               FontSize="100"
+                                               HorizontalAlignment="Center"
+                                               VerticalAlignment="Center"
+                                               FontWeight="Bold"
+                                               Opacity="{Binding PlayerMarker, Converter={StaticResource _cnv}}">
+                            <TextBlock.BitmapEffect>
+                                <DropShadowBitmapEffect ShadowDepth="5" 
+                                                                    Opacity="0.5"/>
+                            </TextBlock.BitmapEffect>
+                        </TextBlock>
+                    </Border>
+
+                </DataTemplate>
+            </ItemsControl.ItemTemplate>
+        </ItemsControl>
+        <Border x:Name="_winMenu" Background="#8000"
+                Visibility="{Binding BorderVisibility, Converter={StaticResource _brdConverter}}">
+            <Grid>
+                <StackPanel Orientation="Horizontal" 
+                            HorizontalAlignment="Center"
+                            VerticalAlignment="Center">
+                    <TextBlock x:Name="_tbName"
+                        Text="Name:"
+                       Foreground="Yellow"
+                       FontSize="14"
+                       FontWeight="Bold"
+                       HorizontalAlignment="Center"
+                       VerticalAlignment="Center"></TextBlock>
+                    <TextBox x:Name="_name" 
+                             Text="{Binding Path=Name}" 
+                             Width="100" 
+                             Height="30"
+                             Margin="0,0,10,0">
+                    </TextBox>
+                    <TextBlock x:Name="_tbIp"
+                               Text="ServerIp:"
+                       Foreground="Yellow"
+                       FontSize="14"
+                       FontWeight="Bold"
+                       HorizontalAlignment="Center"
+                       VerticalAlignment="Center"></TextBlock>
+                    <TextBox x:Name="_ip" 
+                             Text="{Binding Path=ServerIp}" 
+                             Width="100" 
+                             Height="30">
+
+                    </TextBox>
+                    <TextBlock x:Name="_tbPort" 
+                               Text=" Port:"
+                       Foreground="Yellow"
+                       FontSize="14"
+                       FontWeight="Bold"
+                       HorizontalAlignment="Center"
+                       VerticalAlignment="Center"></TextBlock>
+                    <TextBox x:Name="_port" 
+                             Text="{Binding Path=Port}" 
+                             Width="100" 
+                             Height="30"
+                             Margin="10,0,0,0">
+
+                    </TextBox>
+                </StackPanel>
+                <StackPanel Orientation="Horizontal"
+                            HorizontalAlignment="Center"
+                            VerticalAlignment="Bottom">
+                    <Button x:Name="_connect"
+                            Content="Connect"
+                            FontSize="30"
+                            Style="{DynamicResource MahApps.Styles.Button}"
+                            Margin="20"
+                            Click="HideControls">
+                    </Button>
+                    <Button x:Name="_exit" 
+                            Content="Exit"
+                            FontSize="25"
+                            Style="{DynamicResource MahApps.Styles.Button}"
+                            Margin="20"
+                            Command="{Binding Exit}"/>
+                </StackPanel>
+                <StackPanel Orientation="Horizontal"
+                            HorizontalAlignment="Center"
+                            VerticalAlignment="Center">
+                    <Button x:Name="_playerX"
+                            Content="X"
+                            FontSize="50"
+                            Width="100"
+                            Height="100"
+                            Style="{DynamicResource MahApps.Styles.Button}"
+                            Visibility="Hidden"
+                            Command="{Binding PressX}">
+                        
+                    </Button>
+
+                    <Button x:Name="_playerO"
+                            Content="O"
+                            FontSize="50"
+                            Width="100"
+                            Height="100"
+                            Margin="20"
+                            Style="{DynamicResource MahApps.Styles.Button}"
+                            Visibility="Hidden"
+                            Command="{Binding PressO}">
+
+                    </Button>
+                </StackPanel>
+            </Grid>
+        </Border>
+    </Grid>
+</Page>
