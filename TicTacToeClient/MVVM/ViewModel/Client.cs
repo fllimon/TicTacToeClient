@@ -1,4 +1,5 @@
-﻿using System;
+﻿using Newtonsoft.Json;
+using System;
 using System.Collections.Generic;
 using System.Collections.ObjectModel;
 using System.Diagnostics;
@@ -30,7 +31,6 @@ namespace TicTacToeClient.MVVM.ViewModel
         {
             _client = new TcpClient();
             _player = new Player();
-            GameField = new ObservableCollection<Marker>();
             _buffer = new char[1024];
 
             Press = new Command(o =>
@@ -180,11 +180,13 @@ namespace TicTacToeClient.MVVM.ViewModel
                     int count = await reader.ReadAsync(_buffer);
 
                     string data = new string(_buffer, 0, count);
+                    
+                    //List<Marker> mr = System.Text.Json.JsonSerializer.Deserialize<List<Marker>>(data);    // Exeption
+                    
+                    List<Marker> markers = JsonConvert.DeserializeObject<List<Marker>>(data);
 
-                    var gameField = JsonSerializer.Deserialize<object>(data);
-
-                    //GameField = new ObservableCollection<Marker>(gameField);
-
+                    GameField = new ObservableCollection<Marker>(markers);
+                    
                     WriteLog(string.Format($"GameField: {GameField.Count}"));
 
                     if (GameField != null)
@@ -209,7 +211,7 @@ namespace TicTacToeClient.MVVM.ViewModel
                 return;
             }
 
-            await JsonSerializer.SerializeAsync(_client.GetStream(), data);
+            await System.Text.Json.JsonSerializer.SerializeAsync(_client.GetStream(), data);
         }
 
         public void WriteLog(string data)
