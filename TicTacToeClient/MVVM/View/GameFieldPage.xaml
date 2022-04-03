@@ -14,7 +14,16 @@
         <cnv:BorderVisibilityConvertor x:Key="_brdConverter"/>
     </Page.Resources>
     <Grid>
-        <ItemsControl x:Name="_data" 
+        <StackPanel>
+            <Label VerticalAlignment="Top" 
+                   HorizontalAlignment="Right"
+                   Margin="10"
+                   Content="{Binding Path=Player.PlayerStatus}"
+                   FontSize="12"
+                   Width="80"
+                   Height="25"></Label>
+        </StackPanel>
+            <ItemsControl x:Name="_data" 
                       ItemsSource="{Binding GameField}"
                       HorizontalAlignment="Center"
                       VerticalAlignment="Center"
@@ -66,7 +75,7 @@
                 </DataTemplate>
             </ItemsControl.ItemTemplate>
         </ItemsControl>
-        <Border x:Name="_winMenu" Background="#8000"
+        <Border x:Name="_connectToServerMenu" Background="#8000"
                 Visibility="{Binding BorderVisibility, Converter={StaticResource _brdConverter}}">
             <Grid>
                 <StackPanel Orientation="Horizontal" 

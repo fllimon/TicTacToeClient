@@ -1,16 +1,30 @@
-﻿<Window x:Class="TicTacToeClient.MainWindow"
+﻿<mah:MetroWindow  xmlns:mah="http://metro.mahapps.com/winfx/xaml/controls" x:Class="TicTacToeClient.MainWindow"
         xmlns="http://schemas.microsoft.com/winfx/2006/xaml/presentation"
         xmlns:x="http://schemas.microsoft.com/winfx/2006/xaml"
         xmlns:d="http://schemas.microsoft.com/expression/blend/2008"
         xmlns:mc="http://schemas.openxmlformats.org/markup-compatibility/2006"
         xmlns:local="clr-namespace:TicTacToeClient"
         mc:Ignorable="d"
-        Title="Client" Height="600" Width="600">
+        Title="Tic-Tac-Toe Client"
+        WindowStyle="None"
+        ShowCloseButton="False"
+        Height="600"
+        Width="600">
     <Window.Resources>
         <local:BorderVisibilityConvertor x:Key="_brdConverter"/>
     </Window.Resources>
     <Grid Background="DarkCyan">
-
+        <StackPanel HorizontalAlignment="Right"
+                    VerticalAlignment="Top">
+            <Button Content="X"
+                    FontSize="15"
+                    Width="40"
+                    Height="40"
+                    Style="{DynamicResource MahApps.Styles.Button}"
+                    Command="{Binding Exit}">
+                
+            </Button>
+        </StackPanel>
         <Grid VerticalAlignment="Center" 
               HorizontalAlignment="Center">
             <StackPanel Orientation="Vertical">
@@ -25,4 +39,4 @@
         </Grid>
         <Frame x:Name="_frame" NavigationUIVisibility="Hidden"/>
     </Grid>
-</Window>
+</mah:MetroWindow>

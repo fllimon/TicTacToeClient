@@ -22,6 +22,7 @@ namespace TicTacToeClient.MVVM.View
     public partial class GameFieldPage : Page
     {
         private Client _client = null;
+
         public GameFieldPage()
         {
             InitializeComponent();

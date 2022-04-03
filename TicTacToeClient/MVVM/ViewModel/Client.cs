@@ -1,5 +1,4 @@
-﻿using Newtonsoft.Json;
-using System;
+﻿using System;
 using System.Collections.Generic;
 using System.Collections.ObjectModel;
 using System.Diagnostics;
@@ -7,6 +6,7 @@ using System.IO;
 using System.Linq;
 using System.Net;
 using System.Net.Sockets;
+using System.Text;
 using System.Text.Json;
 using System.Threading.Tasks;
 using System.Windows.Input;
@@ -19,23 +19,35 @@ namespace TicTacToeClient.MVVM.ViewModel
         private const string DEFAULT_FILE_LOG_PATH = "../../log.txt";
         private TcpClient _client = null;
         private string _port = "24000";
-        private string _ip = "localhost";
+        private string _ip = "127.0.0.1";
         private string _name = "Player";
         private bool _keepRuning = true;
         private bool _brdVisibility = true;
         private ObservableCollection<Marker> _gameField = null;
         private Player _player = null;
         private char[] _buffer = null;
+        private byte[] _buff = null;
 
         public Client()
         {
             _client = new TcpClient();
             _player = new Player();
             _buffer = new char[1024];
+            _buff = new byte[1024];
 
             Press = new Command(o =>
             {
+                if (_player.PlayerStatus == PlayerStatus.Await)
+                {
+                    return;
+                }
+
                 Marker current = o as Marker;
+
+                if (current != null)
+                {
+                    
+                }
             });
 
             PressX = new Command(o =>
@@ -64,6 +76,16 @@ namespace TicTacToeClient.MVVM.ViewModel
 
                 Environment.Exit(0);
             });
+        }
+
+        #region ================ PROPERTIES =====================
+
+        public Player Player 
+        {
+            get 
+            { 
+                return _player; 
+            }
         }
 
         public ObservableCollection<Marker> GameField
@@ -145,24 +167,39 @@ namespace TicTacToeClient.MVVM.ViewModel
             }
         }
 
+        #endregion
+
         public async Task ConnectToServer()
         {
+            IPAddress ip = IPAddress.Parse(ServerIp);
             int port = int.Parse(Port);
 
             try
             {
-                await _client.ConnectAsync(ServerIp, port);
-
-                if (_client.Connected)
-                {
-                    SendDataToServer(_player);
-                    Array.Clear(_buffer);
-
-                    ReadGameFieldFromServer();
-                }
-
+                _client.BeginConnect(ip, port, OnClientCompliteConnected, _client);
             }
             catch (SocketException ex)
+            {
+
+                throw;
+            }
+        }
+
+        private void OnClientCompliteConnected(IAsyncResult ar)
+        {
+            TcpClient tcpClient = null;
+
+            try
+            {
+                tcpClient = ar.AsyncState as TcpClient;
+                tcpClient.EndConnect(ar);
+
+                if (tcpClient.Connected)
+                {
+                    SendPlayerToServer(_player);
+                }
+            }
+            catch (Exception ex)
             {
 
                 throw;
@@ -173,28 +210,13 @@ namespace TicTacToeClient.MVVM.ViewModel
         {
             try
             {
-                StreamReader reader = new StreamReader(_client.GetStream());
-                
-                while (_keepRuning)
+                _buff = new byte[1024];
+
+                _client.GetStream().BeginRead(_buff, 0, _buff.Length, OnCompleteReadData, _client);
+
+                if (GameField != null)
                 {
-                    int count = await reader.ReadAsync(_buffer);
-
-                    string data = new string(_buffer, 0, count);
-                    
-                    //List<Marker> mr = System.Text.Json.JsonSerializer.Deserialize<List<Marker>>(data);    // Exeption
-                    
-                    List<Marker> markers = JsonConvert.DeserializeObject<List<Marker>>(data);
-
-                    GameField = new ObservableCollection<Marker>(markers);
-                    
                     WriteLog(string.Format($"GameField: {GameField.Count}"));
-
-                    if (GameField != null)
-                    {
-                        _keepRuning = false;
-
-                        break;
-                    }
                 }
             }
             catch (Exception ex)
@@ -204,14 +226,78 @@ namespace TicTacToeClient.MVVM.ViewModel
             }
         }
 
-        private async Task SendDataToServer(object data)
+        private void OnCompleteReadData(IAsyncResult ar)
         {
+            TcpClient client = null;
+
+            try
+            {
+                client = ar.AsyncState as TcpClient;
+                int byteCount = client.GetStream().EndRead(ar);
+
+                if (byteCount == 0)
+                {
+                    return;
+                }
+
+                string data = Encoding.UTF8.GetString(_buff, 0, byteCount);
+
+                List<Marker> mrkr = Newtonsoft.Json.JsonConvert.DeserializeObject<List<Marker>>(data);
+                GameField = new ObservableCollection<Marker>(mrkr);
+
+                Array.Clear(_buff, 0, byteCount);
+            }
+            catch (Exception ex)
+            {
+                _client.Close();
+            }
+        }
+
+        private void SendPlayerToServer(object data)
+        {
+            if (_client == null)
+            {
+                return;
+            }
+
             if (data == null)
             {
                 return;
             }
 
-            await System.Text.Json.JsonSerializer.SerializeAsync(_client.GetStream(), data);
+            string serealizeData = JsonSerializer.Serialize(data);
+            _buff = Encoding.UTF8.GetBytes(serealizeData);
+
+            try
+            {
+                if (_client.Client.Connected)
+                {
+                    _client.GetStream().BeginWrite(_buff, 0, _buff.Length, OnCompleteWriteDataToServer, _client);
+                }
+
+                Array.Clear(_buff);
+            }
+            catch (Exception ex)
+            {
+
+                throw;
+            }
+        }
+
+        private void OnCompleteWriteDataToServer(IAsyncResult ar)
+        {
+            TcpClient client = null;
+
+            try
+            {
+                client = ar.AsyncState as TcpClient;
+                client.GetStream().EndWrite(ar);
+            }
+            catch (Exception ex)
+            {
+
+                throw;
+            }
         }
 
         public void WriteLog(string data)
