@@ -30,12 +30,12 @@ namespace TicTacToeClient
             InitializeComponent();
             _client = new Client();
             DataContext = _client;
-            _frame.DataContext = this;
+            _frame.DataContext = DataContext;
         }
 
         private void StartServerClick(object sender, RoutedEventArgs e)
         {
-            _frame.Content = new GameFieldPage();
+            _frame.Content = new GameFieldPage(DataContext);
             _startServer.Visibility = Visibility.Hidden;
         }
 

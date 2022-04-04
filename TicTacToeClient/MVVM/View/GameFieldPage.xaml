@@ -19,9 +19,9 @@
                    HorizontalAlignment="Right"
                    Margin="10"
                    Content="{Binding Path=Player.PlayerStatus}"
-                   FontSize="12"
-                   Width="80"
-                   Height="25"></Label>
+                   FontSize="25"
+                   Width="105"
+                   Height="40"></Label>
         </StackPanel>
             <ItemsControl x:Name="_data" 
                       ItemsSource="{Binding GameField}"

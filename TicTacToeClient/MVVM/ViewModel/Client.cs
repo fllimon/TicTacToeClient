@@ -194,39 +194,19 @@ namespace TicTacToeClient.MVVM.ViewModel
                 tcpClient = ar.AsyncState as TcpClient;
                 tcpClient.EndConnect(ar);
 
-                if (tcpClient.Connected)
-                {
-                    SendPlayerToServer(_player);
+                SendPlayerToServer(_player);
 
-                    ReadGameFieldFromServer();
-                }
-            }
-            catch (Exception ex)
-            {
-
-                throw;
-            }
-        }
-
-        private void ReadGameFieldFromServer()
-        {
-            try
-            {
                 _buff = new byte[1024];
-
                 _client.GetStream().BeginRead(_buff, 0, _buff.Length, OnCompleteReadData, _client);
-
-                if (GameField != null)
-                {
-                    WriteLog(string.Format($"GameField: {GameField.Count}"));
-                }
             }
             catch (Exception ex)
             {
+                WriteLog(ex.Message);
 
-                throw;
+                _client.Close();
             }
         }
+
 
         private void OnCompleteReadData(IAsyncResult ar)
         {
