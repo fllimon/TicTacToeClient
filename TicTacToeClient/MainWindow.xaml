@@ -5,27 +5,50 @@
         xmlns:mc="http://schemas.openxmlformats.org/markup-compatibility/2006"
         xmlns:local="clr-namespace:TicTacToeClient"
         mc:Ignorable="d"
-        Title="Tic-Tac-Toe Client"
-        WindowStyle="None"
-        ShowCloseButton="False"
-        Height="600"
-        Width="600">
+        WindowStartupLocation="CenterScreen"
+        WindowState="Normal"
+        ResizeMode="NoResize"
+        UseNoneWindowStyle="True"
+        ShowCloseButton="false"
+        ShowTitleBar="False"
+        
+        Height="800"
+        Width="800">
     <Window.Resources>
         <local:BorderVisibilityConvertor x:Key="_brdConverter"/>
     </Window.Resources>
-    <Grid Background="DarkCyan">
-        <StackPanel HorizontalAlignment="Right"
-                    VerticalAlignment="Top">
-            <Button Content="X"
-                    FontSize="15"
-                    Width="40"
+    
+    <Grid Background="DarkCyan"
+          MouseLeftButtonDown="_title_MouseDown">
+        <Grid.RowDefinitions>
+            <RowDefinition Height="40"/>
+
+            <RowDefinition Height="*"/>
+
+        </Grid.RowDefinitions>
+        <StackPanel Grid.Row="0"
+                    VerticalAlignment="Top"
+                    HorizontalAlignment="Right">
+            <Button Width="40"
                     Height="40"
+                    Content="X"
+                    FontSize="20"
                     Style="{DynamicResource MahApps.Styles.Button}"
-                    Command="{Binding Exit}">
-                
-            </Button>
+                    Command="{Binding Path=Exit}"/>
         </StackPanel>
-        <Grid VerticalAlignment="Center" 
+        <StackPanel Grid.Row="0"
+                    VerticalAlignment="Top"
+                    HorizontalAlignment="Left">
+            <mah:Tile Width="759"
+                      x:Name="_title"
+                      ClickMode="Hover"
+                      Height="40"
+                      Content="Tic-Tac-Toe Client"
+                      FontSize="22"
+                      FontWeight="Bold"
+                      Background="Transparent"/>
+        </StackPanel>
+        <Grid Grid.Row="1" VerticalAlignment="Center" 
               HorizontalAlignment="Center">
             <StackPanel Orientation="Vertical">
                 <Button x:Name="_startServer" Content="Start"
@@ -37,6 +60,6 @@
             </StackPanel>
 
         </Grid>
-        <Frame x:Name="_frame" NavigationUIVisibility="Hidden"/>
+        <Frame Grid.Row="1" x:Name="_frame" NavigationUIVisibility="Hidden"/>
     </Grid>
 </mah:MetroWindow>

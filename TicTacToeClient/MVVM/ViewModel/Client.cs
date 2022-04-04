@@ -197,6 +197,8 @@ namespace TicTacToeClient.MVVM.ViewModel
                 if (tcpClient.Connected)
                 {
                     SendPlayerToServer(_player);
+
+                    ReadGameFieldFromServer();
                 }
             }
             catch (Exception ex)
@@ -206,7 +208,7 @@ namespace TicTacToeClient.MVVM.ViewModel
             }
         }
 
-        private async Task ReadGameFieldFromServer()
+        private void ReadGameFieldFromServer()
         {
             try
             {
@@ -245,7 +247,8 @@ namespace TicTacToeClient.MVVM.ViewModel
                 List<Marker> mrkr = Newtonsoft.Json.JsonConvert.DeserializeObject<List<Marker>>(data);
                 GameField = new ObservableCollection<Marker>(mrkr);
 
-                Array.Clear(_buff, 0, byteCount);
+                _buff = new byte[1024];
+                client.GetStream().BeginRead(_buff,0, _buff.Length,OnCompleteReadData, client);
             }
             catch (Exception ex)
             {

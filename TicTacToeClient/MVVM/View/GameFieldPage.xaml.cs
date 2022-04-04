@@ -26,9 +26,6 @@ namespace TicTacToeClient.MVVM.View
         public GameFieldPage()
         {
             InitializeComponent();
-
-            _client = new Client();
-            DataContext = _client;
         }
 
         private void HideControls(object sender, RoutedEventArgs e)
