@@ -21,19 +21,15 @@ namespace TicTacToeClient.MVVM.ViewModel
         private string _port = "24000";
         private string _ip = "127.0.0.1";
         private string _name = "Player";
-        private bool _keepRuning = true;
         private bool _brdVisibility = true;
         private ObservableCollection<Marker> _gameField = null;
         private Player _player = null;
-        private char[] _buffer = null;
-        private byte[] _buff = null;
-
+        private byte[] _bufferRecive = null;
+        
         public Client()
         {
             _client = new TcpClient();
             _player = new Player();
-            _buffer = new char[1024];
-            _buff = new byte[1024];
 
             Press = new Command(o =>
             {
@@ -42,11 +38,11 @@ namespace TicTacToeClient.MVVM.ViewModel
                     return;
                 }
 
-                Marker current = o as Marker;
+                Marker current = (Marker)o;
 
                 if (current != null)
                 {
-                    
+                    SendPlayerDataToServer(current);
                 }
             });
 
@@ -58,6 +54,8 @@ namespace TicTacToeClient.MVVM.ViewModel
                 BorderVisibility = false;
 
                 ConnectToServer();
+                SendPlayerDataToServer(_player);
+
             });
 
             PressO = new Command(o =>
@@ -68,6 +66,7 @@ namespace TicTacToeClient.MVVM.ViewModel
                 BorderVisibility = false;
 
                 ConnectToServer();
+                SendPlayerDataToServer(_player);
             });
 
             Exit = new Command(o =>
@@ -169,7 +168,7 @@ namespace TicTacToeClient.MVVM.ViewModel
 
         #endregion
 
-        public async Task ConnectToServer()
+        public void ConnectToServer()
         {
             IPAddress ip = IPAddress.Parse(ServerIp);
             int port = int.Parse(Port);
@@ -194,10 +193,8 @@ namespace TicTacToeClient.MVVM.ViewModel
                 tcpClient = ar.AsyncState as TcpClient;
                 tcpClient.EndConnect(ar);
 
-                SendPlayerToServer(_player);
-
-                _buff = new byte[1024];
-                _client.GetStream().BeginRead(_buff, 0, _buff.Length, OnCompleteReadData, _client);
+                _bufferRecive = new byte[1024];
+                _client.GetStream().BeginRead(_bufferRecive, 0, _bufferRecive.Length, OnCompleteReadData, _client);
             }
             catch (Exception ex)
             {
@@ -222,13 +219,21 @@ namespace TicTacToeClient.MVVM.ViewModel
                     return;
                 }
 
-                string data = Encoding.UTF8.GetString(_buff, 0, byteCount);
+                string data = Encoding.UTF8.GetString(_bufferRecive, 0, byteCount);
 
-                List<Marker> mrkr = Newtonsoft.Json.JsonConvert.DeserializeObject<List<Marker>>(data);
-                GameField = new ObservableCollection<Marker>(mrkr);
+                if (data.Contains("PlayerStatus"))
+                {
+                    Player player = JsonSerializer.Deserialize<Player>(data);
+                    _player.PlayerStatus = player.PlayerStatus;
+                }
+                else
+                {
+                    List<Marker> mrkr = Newtonsoft.Json.JsonConvert.DeserializeObject<List<Marker>>(data);
+                    GameField = new ObservableCollection<Marker>(mrkr);
+                }
 
-                _buff = new byte[1024];
-                client.GetStream().BeginRead(_buff,0, _buff.Length,OnCompleteReadData, client);
+                _bufferRecive = new byte[1024];
+                client.GetStream().BeginRead(_bufferRecive,0, _bufferRecive.Length,OnCompleteReadData, client);
             }
             catch (Exception ex)
             {
@@ -236,7 +241,7 @@ namespace TicTacToeClient.MVVM.ViewModel
             }
         }
 
-        private void SendPlayerToServer(object data)
+        private void SendPlayerDataToServer(object data)
         {
             if (_client == null)
             {
@@ -249,16 +254,16 @@ namespace TicTacToeClient.MVVM.ViewModel
             }
 
             string serealizeData = JsonSerializer.Serialize(data);
-            _buff = Encoding.UTF8.GetBytes(serealizeData);
+
+            byte[] bufferSend = new byte[1024];
+            bufferSend = Encoding.UTF8.GetBytes(serealizeData);
 
             try
             {
                 if (_client.Client.Connected)
                 {
-                    _client.GetStream().BeginWrite(_buff, 0, _buff.Length, OnCompleteWriteDataToServer, _client);
+                    _client.GetStream().BeginWrite(bufferSend, 0, bufferSend.Length, OnCompleteWriteDataToServer, _client);
                 }
-
-                Array.Clear(_buff);
             }
             catch (Exception ex)
             {
